@@ -1,14 +1,21 @@
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from "../dndTypes.js";
+import { canDragCard } from "../logic/rules.js";
 
-export default function Card({ card, colIndex, cardIndex, style, onClick }) {
+export default function Card({ card, colIndex, cardIndex, style, onClick, isDraggable = true }) {
     const [{ isDragging }, drag] = useDrag(() => ({
         type: ItemTypes.CARD,
-        item: { card, fromColumn: colIndex, fromIndex: cardIndex },
+        item: () => {
+            if (colIndex === 'waste') {
+                return { card, fromWaste: true };
+            }
+            return { card, fromColumn: colIndex, fromIndex: cardIndex };
+        },
+        canDrag: () => isDraggable && canDragCard(card),
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
-    }), [card, colIndex, cardIndex]);
+    }), [card, colIndex, cardIndex, isDraggable]);
 
     const base = (process.env.PUBLIC_URL || '').replace(/\/$/, '');
 

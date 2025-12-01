@@ -13,9 +13,9 @@ export default function Tableau({ cards, colIndex }) {
     const handleDrop = useCallback((item, monitor) => {
         if (!monitor.canDrop()) return;
         
-        if (item.fromColumn === 'waste') {
+        if (item.fromWaste) {
             moveWasteToTableau(colIndex);
-        } else {
+        } else if (item.fromColumn !== undefined && item.fromIndex !== undefined) {
             moveCards(item.fromColumn, item.fromIndex, colIndex);
         }
     }, [colIndex, moveCards, moveWasteToTableau]);
