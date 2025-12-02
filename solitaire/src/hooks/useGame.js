@@ -13,6 +13,31 @@ import getSuggestion from '../logic/ai.js';
 
 const GameContext = createContext(null); // single context for all game bits
 
+// Global debug logger that components can subscribe to
+let debugLogCallback = null;
+// Simple dedupe to avoid React StrictMode double-invocation duplicates in dev
+let __lastLogSig = null;
+let __lastLogTime = 0;
+const __makeLogSig = (message, data) => {
+    try {
+        return `${message}|${data ? JSON.stringify(data) : ''}`;
+    } catch {
+        return message;
+    }
+};
+export const setDebugLogger = (callback) => { debugLogCallback = callback; };
+const debugLog = (message, data) => {
+    const now = Date.now();
+    const sig = __makeLogSig(message, data);
+    // If identical log fires within 200ms, skip as a duplicate (common in StrictMode dev)
+    if (__lastLogSig === sig && now - __lastLogTime < 200) {
+        return;
+    }
+    __lastLogSig = sig;
+    __lastLogTime = now;
+    if (debugLogCallback) debugLogCallback(message, data);
+};
+
 export function GameProvider({ children }) {
     const [gameState, setGameState] = useState(() => initGame());
     const { tableaus, foundations, stock, waste } = gameState;
@@ -43,11 +68,13 @@ export function GameProvider({ children }) {
 
     const resetGame = () => {
         // Re-shuffle and rebuild everything
+        debugLog('🔄 New game started');
         setGameState(initGame());
         setCurrentSuggestion(null); // clear any old hint
     };
 
-    function moveCards(fromColumn, fromIndex, toColumn) {
+    function moveCards(fromColumn, fromIndex, toColumn, opts = {}) {
+        const { silent = false } = opts;
         // Clear any existing suggestion highlight after a move attempt
         setCurrentSuggestion(null);
         if (fromColumn === toColumn) return;
@@ -61,6 +88,10 @@ export function GameProvider({ children }) {
             if (moving.length === 0) return prev;
 
             if (!canPlace(moving[0], dest)) return prev;
+            
+            if (!silent) {
+                debugLog(`📤 Move ${moving.length} card(s) from column ${fromColumn + 1} to column ${toColumn + 1}`, { cards: moving.map(c => `${c.rank} of ${c.suit}`) });
+            }
 
             newTableaus[fromColumn] = source.slice(0, fromIndex);
 
@@ -82,12 +113,14 @@ export function GameProvider({ children }) {
     }
 
     // Draw a card from stock OR recycle waste if stock empty
-    function drawOne() {
+    function drawOne(opts = {}) {
+        const { silent = false } = opts;
         // Clear suggestion highlight when user draws or recycles
         setCurrentSuggestion(null);
         setStock((prevStock) => {
             // Try to recycle waste if stock is empty
             if (canRecycleWaste(prevStock, waste)) {
+                if (!silent) debugLog('♻️ Recycling waste back to stock');
                 setWaste((prevWaste) => {
                     if (!prevWaste || prevWaste.length === 0) return [];
                     const newStock = prevWaste.map((c) => ({ ...c, faceUp: false }));
@@ -102,6 +135,7 @@ export function GameProvider({ children }) {
 
             const newStock = prevStock.slice(0, -1);
             const drawn = prevStock[prevStock.length - 1];
+            if (!silent) debugLog(`🎴 Drew card from stock`, { card: `${drawn.rank} of ${drawn.suit}` });
             const toWaste = { ...drawn, faceUp: true };
             setWaste((prev) => [...prev, toWaste]);
             return newStock;
@@ -109,13 +143,18 @@ export function GameProvider({ children }) {
     }
 
     // Move waste top card onto a tableau if legal
-    function moveWasteToTableau(toColumn) {
+    function moveWasteToTableau(toColumn, opts = {}) {
+        const { silent = false } = opts;
         setCurrentSuggestion(null);
         if (!waste || waste.length === 0) return;
         const top = waste[waste.length - 1];
 
         const dest = tableaus[toColumn] || [];
         if (!canPlace(top, dest)) return;
+        
+        if (!silent) {
+            debugLog(`📥 Move waste card to column ${toColumn + 1}`, { card: `${top.rank} of ${top.suit}` });
+        }
 
         setWaste((prevWaste) => prevWaste.slice(0, -1));
 
@@ -130,7 +169,8 @@ export function GameProvider({ children }) {
     }
 
     // Move top tableau card to a foundation pile
-    function moveToFoundation(fromColumn, fromIndex, foundationIndex) {
+    function moveToFoundation(fromColumn, fromIndex, foundationIndex, opts = {}) {
+        const { silent = false } = opts;
         setCurrentSuggestion(null);
         // Use functional updates to avoid stale closures for foundations
         setGameState((prev) => {
@@ -140,6 +180,9 @@ export function GameProvider({ children }) {
             if (!source || fromIndex !== source.length - 1) return prev;
             const card = source[fromIndex];
             if (!canPlaceOnFoundation(card, foundationsCopy[foundationIndex])) return prev;
+            
+            if (!silent) debugLog(`⬆️ Move card to foundation pile ${foundationIndex + 1}`, { card: `${card.rank} of ${card.suit}` });
+            
             // Push card to foundation
             foundationsCopy[foundationIndex] = [...foundationsCopy[foundationIndex], { ...card }];
             // Remove from tableau
@@ -155,13 +198,17 @@ export function GameProvider({ children }) {
     }
 
     // Move waste top card to a foundation pile
-    function moveWasteToFoundation(foundationIndex) {
+    function moveWasteToFoundation(foundationIndex, opts = {}) {
+        const { silent = false } = opts;
         setCurrentSuggestion(null);
         setGameState((prev) => {
             if (!prev.waste || prev.waste.length === 0) return prev;
             const top = prev.waste[prev.waste.length - 1];
             const foundationsCopy = prev.foundations.map(f => [...f]);
             if (!canPlaceOnFoundation(top, foundationsCopy[foundationIndex])) return prev;
+            
+            if (!silent) debugLog(`⬆️ Move waste card to foundation pile ${foundationIndex + 1}`, { card: `${top.rank} of ${top.suit}` });
+            
             const wasteCopy = prev.waste.slice(0, -1);
             foundationsCopy[foundationIndex] = [...foundationsCopy[foundationIndex], { ...top }];
             return { ...prev, waste: wasteCopy, foundations: foundationsCopy };
@@ -202,6 +249,7 @@ export function GameProvider({ children }) {
     const suggestMove = () => {
         // Ask AI helper for best move then store for UI highlight
         const result = getSuggestion({ tableaus, foundations, stock, waste });
+        debugLog('🤖 AI Suggestion generated', { type: result.move?.type, message: result.message });
         setCurrentSuggestion(result.move);
         return result;
     };

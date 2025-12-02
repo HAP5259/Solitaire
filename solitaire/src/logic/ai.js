@@ -131,7 +131,7 @@ export function enumerateMoves(state) {
 // Heuristic scoring for prioritization
 // Higher is better
 // Give a move a numeric score + reasons list (simple heuristic)
-function scoreMove(move, state) {
+export function scoreMove(move, state) {
   const { tableaus, waste, foundations } = state;
   let score = 0;
   let reasonParts = [];
