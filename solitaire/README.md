@@ -1,5 +1,8 @@
 # Klondike Solitaire with AI
 
+[![CI](https://img.shields.io/github/actions/workflow/status/robertbiv/Klondike-Solitaire-with-AI/ci.yml?branch=main&label=CI)](https://github.com/robertbiv/Klondike-Solitaire-with-AI/actions/workflows/ci.yml)
+[![Pages](https://img.shields.io/github/deployments/robertbiv/Klondike-Solitaire-with-AI/github-pages?label=pages)](https://github.com/robertbiv/Klondike-Solitaire-with-AI/deployments/activity_log?environment=github-pages)
+
 A Solitaire game that can actually teach you how to play better! Built with React and includes an AI that explains its thinking.
 
 ## What's Cool About This
@@ -74,6 +77,7 @@ This repo includes GitHub Actions for CI and deployment:
 Notes:
 - Workflows build from the `solitaire/` folder and publish the `solitaire/build` output.
 - Tests run via `react-scripts test` with `--watchAll=false` for CI.
+- CI uses `npm install` to avoid lockfile sync errors; if you prefer `npm ci`, commit a `package-lock.json` generated from `solitaire/` with `npm install`.
 
 ## How It's Organized
 
