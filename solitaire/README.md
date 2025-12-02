@@ -76,8 +76,8 @@ This repo includes GitHub Actions for CI and deployment:
 
 Notes:
 - Workflows build from the `solitaire/` folder and publish the `solitaire/build` output.
-- Tests run via `react-scripts test` with `--watchAll=false` for CI.
-- CI uses `npm install` to avoid lockfile sync errors; if you prefer `npm ci`, commit a `package-lock.json` generated from `solitaire/` with `npm install`.
+- Tests run via `react-scripts test` with `--watchAll=false --passWithNoTests` for CI.
+- The project currently has no test files; CI passes with the `--passWithNoTests` flag.
 
 ## How It's Organized
 
