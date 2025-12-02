@@ -1,0 +1,25 @@
+{
+  "ranks": ["ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king"],
+  "rankAliases": {"a": "ace", "j": "jack", "q": "queen", "k": "king"},
+  "rankValues": {"ace": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "jack": 11, "queen": 12, "king": 13},
+  "suits": ["hearts", "diamonds", "clubs", "spades"],
+  "suitColors": {"hearts": "red", "diamonds": "red", "clubs": "black", "spades": "black"},
+  "tableau": {
+    "allowOnEmpty": "king",
+    "buildDirection": "descending",
+    "alternateColors": true
+  },
+  "foundation": {
+    "start": "ace",
+    "buildDirection": "ascending",
+    "matchSuit": true
+  },
+  "stock": {
+    "drawCount": 1,
+    "recycleFaceDown": true
+  },
+  "winCondition": {
+    "foundationPiles": 4,
+    "cardsPerPile": 13
+  }
+}
