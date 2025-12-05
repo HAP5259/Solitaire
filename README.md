@@ -1,5 +1,5 @@
 # Klondike Solitaire with AI
-
+ 
 [![CI](https://img.shields.io/github/actions/workflow/status/robertbiv/Klondike-Solitaire-with-AI/ci.yml?branch=main&label=CI)](https://github.com/robertbiv/Klondike-Solitaire-with-AI/actions/workflows/ci.yml)
 [![Pages](https://img.shields.io/github/deployments/robertbiv/Klondike-Solitaire-with-AI/github-pages?label=pages)](https://github.com/robertbiv/Klondike-Solitaire-with-AI/deployments/activity_log?environment=github-pages)
 
