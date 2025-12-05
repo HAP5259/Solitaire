@@ -4,7 +4,7 @@
 [![Pages](https://img.shields.io/github/deployments/robertbiv/Klondike-Solitaire-with-AI/github-pages?label=pages)](https://github.com/robertbiv/Klondike-Solitaire-with-AI/deployments/activity_log?environment=github-pages)
 
 A Solitaire game that can actually teach you how to play better! Built with React and includes an AI that explains its thinking.
-
+ 
 **🎮 [Play it live here!](https://robertb.me/Klondike-Solitaire-with-AI/)**
 
 ## What's Cool About This
